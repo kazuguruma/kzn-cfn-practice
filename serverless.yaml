@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  LambdaCustomPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: Allow
+            # [TODO] Resourceの修正
+            Action:
+              - s3:ListAllMyBuckets
+              - s3:ListBucket
+              - s3:GetObject
+            Resource: "*"
+          -
+            Effect: Allow
+            # [TODO] Resourceの修正
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "*"
+          -
+            Effect: Allow
+            # [TODO] Resourceの修正
+            Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ReceiveMessage
+              - sqs:sendMessage
+            Resource: "*"
+          -
+            Effect: Allow
+            # [TODO] Resourceの修正
+            Action:
+              - dynamodb:Get*
+              - dynamodb:Query
+              - dynamodb:PutItem
+              - dynamodb:Delete
+            Resource: "*"
+
+  FirstLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Ref LambdaCustomPolicy
+
+  SecondLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Ref LambdaCustomPolicy
