@@ -4,43 +4,61 @@ Resources:
   LambdaCustomPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
+      ManagedPolicyName: Lambda-Policy
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
           -
             Effect: Allow
-            # [TODO] Resourceの修正
             Action:
               - s3:ListAllMyBuckets
               - s3:ListBucket
               - s3:GetObject
+            # [TODO] Resourceの修正
             Resource: "*"
           -
             Effect: Allow
-            # [TODO] Resourceの修正
             Action:
               - logs:CreateLogStream
               - logs:PutLogEvents
+            # [TODO] Resourceの修正
             Resource: "*"
           -
             Effect: Allow
-            # [TODO] Resourceの修正
             Action:
               - sqs:DeleteMessage
               - sqs:GetQueueAttributes
               - sqs:ReceiveMessage
               - sqs:sendMessage
+            # [TODO] Resourceの修正
             Resource: "*"
           -
             Effect: Allow
-            # [TODO] Resourceの修正
             Action:
               - dynamodb:Get*
               - dynamodb:Query
               - dynamodb:PutItem
               - dynamodb:Delete
+            # [TODO] Resourceの修正
             Resource: "*"
-
+  InlinePolicy:
+     Type: 'AWS::IAM::Policy'
+     Properties:
+        PolicyName: Lambda-Runcommand-InlinePolicy
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - 
+              Effect: Allow
+              Action:
+                - ssm:SendCommand
+                - ssm:ListCommandInvocations
+                - ssm:GetCommandInvocation
+              # [TODO] Resourceの修正
+              Resource: '*'
+        Roles:
+          - !Ref SecondLambdaRole
+  
   FirstLambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
