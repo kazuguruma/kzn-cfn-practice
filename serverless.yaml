@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
+  # IAM Settings
   LambdaCustomPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -90,3 +91,86 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Ref LambdaCustomPolicy
+
+  # FirstSQS Settings
+  FirstSQSDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: dev-lambda1-dead-letter-queue
+  FirstSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 60
+      QueueName: dev-lambda1-letter-queue
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: 
+            - "FirstSQSDeadLetterQueue"
+            - "Arn"
+        # メッセージが配信不能キューに移動される前にソースキューに配信された回数。
+        maxReceiveCount: 1
+      # メッセージがキューから配信された後、メッセージが使用できなくなる時間の長さ。
+      VisibilityTimeout: 10
+
+  # SecondSQS Settings
+  SecondSQSDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: dev-lambda2-dead-letter-queue
+  SecondSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 60
+      QueueName: dev-lambda2-letter-queue
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt: 
+            - "SecondSQSDeadLetterQueue"
+            - "Arn"
+        # メッセージが配信不能キューに移動される前にソースキューに配信された回数。
+        maxReceiveCount: 1
+      # メッセージがキューから配信された後、メッセージが使用できなくなる時間の長さ。
+      VisibilityTimeout: 10
+
+Outputs: 
+  FirstSQSQueueURL: 
+    Description: "URL of new First SQS Queue"
+    Value: 
+      Ref: FirstSQSQueue
+  FirstSQSDeadLetterQueueURL: 
+    Description: "URL of new FirstSQS DeadLetterQueue"
+    Value: 
+      Ref: FirstSQSDeadLetterQueue
+  FirstSQSQueueURL: 
+    Description: "ARN of new FirstSQS Queue"
+    Value: 
+          Fn::GetAtt: 
+            - "FirstSQSQueue"
+            - "Arn"
+  FirstSQSDeadLetterQueueARN: 
+    Description: "ARN of new FirstSQS DeadLetterQueue"
+    Value: 
+          Fn::GetAtt: 
+            - "FirstSQSDeadLetterQueue"
+            - "Arn"
+
+  SecondSQSQueueURL: 
+    Description: "URL of new SecondSQS Queue"
+    Value: 
+      Ref: SecondSQSQueue
+  SecondSQSDeadLetterQueueURL: 
+    Description: "URL of new SecondSQS DeadLetterQueue"
+    Value: 
+      Ref: SecondSQSDeadLetterQueue
+  SecondSQSQueueURL: 
+    Description: "ARN of new SecondSQS Queue"
+    Value: 
+          Fn::GetAtt: 
+            - "SecondSQSQueue"
+            - "Arn"
+  SecondSQSDeadLetterQueueARN: 
+    Description: "ARN of new SecondSQS DeadLetterQueue"
+    Value: 
+          Fn::GetAtt: 
+            - "SecondSQSDeadLetterQueue"
+            - "Arn"
