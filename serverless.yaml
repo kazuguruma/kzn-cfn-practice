@@ -154,6 +154,42 @@ Resources:
         WriteCapacityUnits: "1"
       TableName: "Lambda1-DynamoDBTable"
 
+  #Lambda1 Settings
+  Lambda1Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Lambda1-Function
+      Runtime: python3.6
+      Role: !GetAtt FirstLambdaRole.Arn
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+            print "OK!!"
+
+  # Lambda1のイベントトリガーを設定する
+  EventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties: 
+      Enabled: true
+      EventSourceArn: !GetAtt FirstSQSQueue.Arn
+      FunctionName: !Ref Lambda1Function
+      BatchSize: 1
+
+  # Lambda1の送信先(Destination)を指定する
+  NextDestination:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      DestinationConfig:
+          # 成功・失敗それぞれの送信先を設定することが可能
+          OnSuccess:
+            # 送信先の設定
+            Destination: !GetAtt SecondSQSQueue.Arn
+      FunctionName: !Ref Lambda1Function
+      MaximumEventAgeInSeconds: 60
+      MaximumRetryAttempts: 1
+      Qualifier: $LATEST
+
 Outputs: 
   FirstSQSQueueURL: 
     Description: "URL of new First SQS Queue"
@@ -175,7 +211,6 @@ Outputs:
           Fn::GetAtt: 
             - "FirstSQSDeadLetterQueue"
             - "Arn"
-
   SecondSQSQueueURL: 
     Description: "URL of new SecondSQS Queue"
     Value: 
