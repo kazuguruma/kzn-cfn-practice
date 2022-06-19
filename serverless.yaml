@@ -1,5 +1,17 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
+Parameters:
+  # 環境設定
+  EnvironmentType:
+    Description: The environment type
+    Type: String
+    Default: staging
+    AllowedValues:
+      - prod
+      - staging
+      - dev
+    ConstraintDescription: must be a prod or staging or dev
+
 Resources:
   # IAM Settings
   LambdaCustomPolicy:
@@ -31,8 +43,9 @@ Resources:
               - sqs:GetQueueAttributes
               - sqs:ReceiveMessage
               - sqs:sendMessage
-            # [TODO] Resourceの修正
-            Resource: "*"
+            Resource: 
+              - !GetAtt FirstSQSQueue.Arn
+              - !GetAtt SecondSQSQueue.Arn
           -
             Effect: Allow
             Action:
@@ -40,8 +53,8 @@ Resources:
               - dynamodb:Query
               - dynamodb:PutItem
               - dynamodb:Delete
-            # [TODO] Resourceの修正
-            Resource: "*"
+            Resource: !GetAtt Lambda1toDynamoDBTable.Arn
+
   InlinePolicy:
      Type: 'AWS::IAM::Policy'
      Properties:
@@ -131,6 +144,7 @@ Resources:
         maxReceiveCount: 1
       # メッセージがキューから配信された後、メッセージが使用できなくなる時間の長さ。
       VisibilityTimeout: 10
+
   # DynamoDB Settings
   Lambda1toDynamoDBTable:
     Type: AWS::DynamoDB::Table
