@@ -56,25 +56,25 @@ Resources:
             Resource: !GetAtt Lambda1toDynamoDBTable.Arn
 
   InlinePolicy:
-     Type: 'AWS::IAM::Policy'
-     Properties:
-        PolicyName: Lambda-Runcommand-InlinePolicy
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - 
-              Effect: Allow
-              Action:
-                - ssm:SendCommand
-                - ssm:ListCommandInvocations
-                - ssm:GetCommandInvocation
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: Lambda-Runcommand-InlinePolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - 
+            Effect: Allow
+            Action:
+              - ssm:SendCommand
+              - ssm:ListCommandInvocations
+              - ssm:GetCommandInvocation
               # [TODO] Resourceの修正
-              Resource: '*'
-        Roles:
-          - !Ref SecondLambdaRole
+            Resource: '*'
+      Roles:
+        - !Ref SecondLambdaRole
   
   FirstLambdaRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -90,7 +90,7 @@ Resources:
         - !Ref LambdaCustomPolicy
 
   SecondLambdaRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -116,10 +116,7 @@ Resources:
       MessageRetentionPeriod: 60
       QueueName: dev-lambda1-letter-queue
       RedrivePolicy:
-        deadLetterTargetArn:
-          Fn::GetAtt: 
-            - "FirstSQSDeadLetterQueue"
-            - "Arn"
+        deadLetterTargetArn: !GetAtt FirstSQSDeadLetterQueue.Arn
         # メッセージが配信不能キューに移動される前にソースキューに配信された回数。
         maxReceiveCount: 1
       # メッセージがキューから配信された後、メッセージが使用できなくなる時間の長さ。
@@ -136,10 +133,7 @@ Resources:
       MessageRetentionPeriod: 60
       QueueName: dev-lambda2-letter-queue
       RedrivePolicy:
-        deadLetterTargetArn:
-          Fn::GetAtt: 
-            - "SecondSQSDeadLetterQueue"
-            - "Arn"
+        deadLetterTargetArn: !GetAtt SecondSQSDeadLetterQueue.Arn
         # メッセージが配信不能キューに移動される前にソースキューに配信された回数。
         maxReceiveCount: 1
       # メッセージがキューから配信された後、メッセージが使用できなくなる時間の長さ。
@@ -215,16 +209,10 @@ Outputs:
       Ref: FirstSQSDeadLetterQueue
   FirstSQSQueueURL: 
     Description: "ARN of new FirstSQS Queue"
-    Value: 
-          Fn::GetAtt: 
-            - "FirstSQSQueue"
-            - "Arn"
+    Value: !GetAtt FirstSQSQueue.Arn
   FirstSQSDeadLetterQueueARN: 
     Description: "ARN of new FirstSQS DeadLetterQueue"
-    Value: 
-          Fn::GetAtt: 
-            - "FirstSQSDeadLetterQueue"
-            - "Arn"
+    Value:  !GetAtt FirstSQSDeadLetterQueue.Arn
   SecondSQSQueueURL: 
     Description: "URL of new SecondSQS Queue"
     Value: 
@@ -235,16 +223,10 @@ Outputs:
       Ref: SecondSQSDeadLetterQueue
   SecondSQSQueueURL: 
     Description: "ARN of new SecondSQS Queue"
-    Value: 
-          Fn::GetAtt: 
-            - "SecondSQSQueue"
-            - "Arn"
+    Value: !GetAtt SecondSQSQueue.Arn
   SecondSQSDeadLetterQueueARN: 
     Description: "ARN of new SecondSQS DeadLetterQueue"
-    Value: 
-          Fn::GetAtt: 
-            - "SecondSQSDeadLetterQueue"
-            - "Arn"
+    Value: !GetAtt SecondSQSDeadLetterQueue.Arn
   # DynamoDBのTableName出力
   DynameDBName: 
     Description: "Name of DynamoDB TableName"
