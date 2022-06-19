@@ -131,6 +131,28 @@ Resources:
         maxReceiveCount: 1
       # メッセージがキューから配信された後、メッセージが使用できなくなる時間の長さ。
       VisibilityTimeout: 10
+  # DynamoDB Settings
+  Lambda1toDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "id"
+          AttributeType: "N"
+        -
+          AttributeName: "user_name"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: "HASH"
+        -
+          AttributeName: "user_name"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "Lambda1-DynamoDBTable"
 
 Outputs: 
   FirstSQSQueueURL: 
@@ -174,3 +196,10 @@ Outputs:
           Fn::GetAtt: 
             - "SecondSQSDeadLetterQueue"
             - "Arn"
+  # DynamoDBのTableName出力
+  DynameDBName: 
+    Description: "Name of DynamoDB TableName"
+    Value: 
+    Value: 
+      Ref: Lambda1toDynamoDBTable
+
