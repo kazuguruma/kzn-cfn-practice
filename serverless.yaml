@@ -200,6 +200,5 @@ Outputs:
   DynameDBName: 
     Description: "Name of DynamoDB TableName"
     Value: 
-    Value: 
       Ref: Lambda1toDynamoDBTable
 
