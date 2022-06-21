@@ -28,7 +28,7 @@ Resources:
               - s3:ListBucket
               - s3:GetObject
             # [TODO] Resourceの修正
-            Resource: "*"
+            Resource: !GetAtt S3Bucket.Arn
           -
             Effect: Allow
             Action:
@@ -172,8 +172,13 @@ Resources:
       Handler: index.handler
       Code:
         ZipFile: |
+          import os
           def lambda_handler(event, context):
             print "OK!!"
+      Environment:
+        Variables:
+          S3Url: !Ref S3Bucket
+          S3ObjectName: UserName.txt
 
   # Lambda1のイベントトリガーを設定する
   EventSourceMapping:
@@ -197,6 +202,17 @@ Resources:
       MaximumEventAgeInSeconds: 60
       MaximumRetryAttempts: 1
       Qualifier: $LATEST
+
+  # データの置き場所を作成する
+  # AES256でサーバサイド暗号化を行う
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: kzn-test-buckets
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
 
 Outputs: 
   FirstSQSQueueURL: 
@@ -232,4 +248,8 @@ Outputs:
     Description: "Name of DynamoDB TableName"
     Value: 
       Ref: Lambda1toDynamoDBTable
+  S3BucketName:
+    Description: "Name of S3 Bucket Name"
+    Value:
+      Ref: S3Bucket
 
