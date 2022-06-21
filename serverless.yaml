@@ -216,6 +216,23 @@ Resources:
         - ServerSideEncryptionByDefault:
             SSEAlgorithm: AES256
 
+  # SQS デットレターキューのAlarm
+  QueueAlarm: 
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmDescription: Dead Letter queue monitoring
+      Namespace: AWS/SQS
+      MetricName: NumberOfMessagesSent
+      Dimensions: 
+        - 
+          Name: QueueName
+          Value: !GetAtt FirstSQSDeadLetterQueue.QueueName
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+
 Outputs: 
   FirstSQSQueueURL: 
     Description: "URL of new First SQS Queue"
