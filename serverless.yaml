@@ -227,11 +227,27 @@ Resources:
         - 
           Name: QueueName
           Value: !GetAtt FirstSQSDeadLetterQueue.QueueName
-      Statistic: Minimum
+      Statistic: Maximum
       Period: 60
       EvaluationPeriods: 1
       Threshold: 1
       ComparisonOperator: GreaterThanOrEqualToThreshold
+
+  # Lambdaのエラー検知アラーム
+  LambdaAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace : AWS/Lambda
+      AlarmName : lambda-errors-alarm
+      MetricName : Errors
+      ComparisonOperator : GreaterThanOrEqualToThreshold
+      EvaluationPeriods : 1
+      Period : 60
+      Statistic : Maximum
+      Threshold : 1
+      Dimensions :
+        - Name : FunctionName
+          Value : !GetAtt Lambda1Function.Arn
 
 Outputs: 
   FirstSQSQueueURL: 
